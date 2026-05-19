@@ -1,7 +1,7 @@
 package dk.rutesplanen.backend.service;
 
 import dk.rutesplanen.backend.model.User;
-
+import dk.rutesplanen.backend.repositories.UserRepository;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
