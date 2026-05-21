@@ -1,6 +1,7 @@
 package dk.rutesplanen.backend.controller;
 
 import dk.rutesplanen.backend.model.PickupRequest;
+import dk.rutesplanen.backend.model.PickupStatus;
 import dk.rutesplanen.backend.model.Role;
 import dk.rutesplanen.backend.model.User;
 import dk.rutesplanen.backend.service.LoginTokenService;
