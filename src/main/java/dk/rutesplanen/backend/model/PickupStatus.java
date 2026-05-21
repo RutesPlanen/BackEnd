@@ -1,9 +1,9 @@
-package dk.rutesplanen.backend.model
+package dk.rutesplanen.backend.model;
 
 /**
  * Status for pantanmodninger.
  */
-enum class PickupStatus {
+public enum PickupStatus {
     PENDING,
     PLANNED,
     COMPLETED
