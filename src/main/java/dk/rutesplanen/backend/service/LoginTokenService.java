@@ -2,37 +2,59 @@ package dk.rutesplanen.backend.service;
 
 import dk.rutesplanen.backend.model.User;
 import dk.rutesplanen.backend.repositories.UserRepository;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class LoginTokenService {
 
-    // Tokens gemmes i hukommelsen – de forsvinder ved genstart af serveren
-    private final Map<String, User> aktiveSessioner = new ConcurrentHashMap<>();
+    private static final Duration TOKEN_TTL = Duration.ofHours(24);
+
+    private record SessionEntry(User user, Instant expiresAt) {}
+
+    private final Map<String, SessionEntry> aktiveSessioner = new ConcurrentHashMap<>();
     private final UserRepository userRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public LoginTokenService(UserRepository userRepository) {
         this.userRepository = userRepository;
+        this.passwordEncoder = new BCryptPasswordEncoder();
     }
 
     public Optional<Map.Entry<String, User>> login(String email, String password) {
-        return userRepository.findByEmailAndPassword(email, password)
-                // Afvis login hvis brugeren er deaktiveret (active = false)
-                .filter(u -> !Boolean.FALSE.equals(u.getActive()))
+        return userRepository.findByEmail(email)
+                // Afvis login hvis brugeren er deaktiveret
+                .filter(u -> Boolean.TRUE.equals(u.getActive()))
+                // Valider adgangskode mod BCrypt-hash
+                .filter(u -> passwordEncoder.matches(password, u.getPassword()))
                 .map(user -> {
-                    // Generer et unikt tilfældigt token og gem det med brugeren
                     String token = UUID.randomUUID().toString();
-                    aktiveSessioner.put(token, user);
+                    aktiveSessioner.put(token, new SessionEntry(user, Instant.now().plus(TOKEN_TTL)));
                     return Map.entry(token, user);
                 });
     }
 
-    // Slår token op i sessionskortet og returnerer den tilhørende bruger hvis det er gyldigt
     public Optional<User> validerToken(String token) {
-        return Optional.ofNullable(aktiveSessioner.get(token));
+        SessionEntry entry = aktiveSessioner.get(token);
+        if (entry == null) return Optional.empty();
+        if (Instant.now().isAfter(entry.expiresAt())) {
+            aktiveSessioner.remove(token);
+            return Optional.empty();
+        }
+        return Optional.of(entry.user());
+    }
+
+    public void logout(String token) {
+        aktiveSessioner.remove(token);
+    }
+
+    public BCryptPasswordEncoder getPasswordEncoder() {
+        return passwordEncoder;
     }
 }
