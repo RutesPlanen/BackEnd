@@ -1,7 +1,8 @@
 package dk.rutesplanen.backend.repositories;
+import dk.rutesplanen.backend.model.PickupStatus;
 
 import dk.rutesplanen.backend.model.PickupRequest;
-import dk.rutesplanen.backend.model.PickupStatus;
+
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
