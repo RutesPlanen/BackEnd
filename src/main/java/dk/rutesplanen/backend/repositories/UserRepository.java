@@ -11,5 +11,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmailAndPassword(String email, String password);
 
     // Bruges til at tjekke om en email allerede er i brug
-    Optional<User> findByEmail(String email);
+    Optional<User> findFirstByEmail(String email);
 }

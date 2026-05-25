@@ -18,7 +18,7 @@ public class DefaultAdminSeeder {
             String adminEmail = System.getenv().getOrDefault("ADMIN_EMAIL", "admin@rutesplanen.dk");
             String adminPassword = System.getenv().getOrDefault("ADMIN_PASSWORD", "admin123");
 
-            if (userRepository.findByEmail(adminEmail).isEmpty()) {
+            if (userRepository.findFirstByEmail(adminEmail).isEmpty()) {
                 User admin = new User();
                 admin.setName("Admin");
                 admin.setEmail(adminEmail);

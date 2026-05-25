@@ -28,8 +28,7 @@ public class LoginTokenService {
     }
 
     public Optional<Map.Entry<String, User>> login(String email, String password) {
-        return userRepository.findByEmail(email)
-                // Afvis login hvis brugeren er deaktiveret
+        return userRepository.findFirstByEmail(email)                // Afvis login hvis brugeren er deaktiveret
                 .filter(u -> Boolean.TRUE.equals(u.getActive()))
                 // Valider adgangskode mod BCrypt-hash
                 .filter(u -> passwordEncoder.matches(password, u.getPassword()))
