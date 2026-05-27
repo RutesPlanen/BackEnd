@@ -13,7 +13,7 @@ services:
       WAREHOUSE_ADDRESS: "Lagervej 1, 2600 Glostrup"
 
   frontend:
-    build: ../NewFrontEndProject
+    build: ../FrontEnd
     ports:
       - "8081:80"
     depends_on:

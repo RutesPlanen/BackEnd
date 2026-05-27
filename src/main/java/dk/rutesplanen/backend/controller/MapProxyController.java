@@ -45,7 +45,8 @@ public class MapProxyController {
     public ResponseEntity<String> geocode(@RequestParam String address) throws Exception {
         String encoded = URLEncoder.encode(address, StandardCharsets.UTF_8);
         String url = "https://api.openrouteservice.org/geocode/search?api_key=" + orsApiKey
-                + "&text=" + encoded + "&boundary.country=DK&size=1";
+                + "&text=" + encoded + "&boundary.country=DK&size=1"
+                + "&focus.point.lat=55.667&focus.point.lon=12.395";
         HttpRequest req = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
         HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         return ResponseEntity.status(res.statusCode())
@@ -72,7 +73,7 @@ public class MapProxyController {
     @PostMapping("/optimize")
     public ResponseEntity<String> optimize(@RequestBody String body) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create("https://api.openrouteservice.org/v2/optimization"))
+                .uri(URI.create("https://api.openrouteservice.org/optimization"))
                 .header("Content-Type", "application/json")
                 .header("Authorization", orsApiKey)
                 .POST(HttpRequest.BodyPublishers.ofString(body))

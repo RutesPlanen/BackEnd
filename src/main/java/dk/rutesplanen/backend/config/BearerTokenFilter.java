@@ -17,7 +17,6 @@ public class BearerTokenFilter extends OncePerRequestFilter {
     public BearerTokenFilter(LoginTokenService loginTokenService) {
         this.loginTokenService = loginTokenService;
     }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -25,26 +24,36 @@ public class BearerTokenFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Login-endpointet kræver ikke token – det er her tokenet udstedes
+        // Tillad preflight OPTIONS requests uden token
+        if (request.getMethod().equals("OPTIONS")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Login-endpointet kræver ikke token
         if (path.equals("/api/auth/login")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Statiske filer (HTML/CSS/JS) kræver ikke token
+        // Map config kræver ikke token
+        if (path.equals("/api/map/config")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Statiske filer kræver ikke token
         if (!path.startsWith("/api/")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Tjek at Authorization-headeren er til stede og starter med "Bearer "
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ")) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        // Valider tokenet mod sessionskortet – afvis hvis det er ukendt
         String token = header.substring(7);
         if (loginTokenService.validerToken(token).isEmpty()) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -52,5 +61,4 @@ public class BearerTokenFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
-    }
-}
+    }}
