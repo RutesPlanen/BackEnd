@@ -33,7 +33,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, loginTokenService);
     }
 
     private User nyBruger(String email, String password) {

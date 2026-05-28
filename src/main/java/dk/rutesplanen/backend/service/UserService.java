@@ -8,16 +8,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-/**
- * Service til håndtering af brugere.
- */
 @Service
 public class UserService {
 
     private final UserRepository userRepository;
+    private final LoginTokenService loginTokenService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, LoginTokenService loginTokenService) {
         this.userRepository = userRepository;
+        this.loginTokenService = loginTokenService;
     }
 
     public List<User> findAllUsers() {
@@ -29,7 +28,13 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        // Nye brugere sættes altid til aktive ved oprettelse
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Adgangskode må ikke være tom");
+        }
+        if (userRepository.findFirstByEmail(user.getEmail()).isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email er allerede i brug");
+        }
+        user.setPassword(loginTokenService.getPasswordEncoder().encode(user.getPassword()));
         user.setActive(true);
         return userRepository.save(user);
     }
@@ -37,12 +42,10 @@ public class UserService {
     public User updateUser(Long id, User opdateret) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bruger ikke fundet"));
-        // Opdater kun de felter der faktisk sendes – null-felter rører vi ikke
         if (opdateret.getName() != null) user.setName(opdateret.getName());
         if (opdateret.getEmail() != null) user.setEmail(opdateret.getEmail());
-        // Adgangskode opdateres kun hvis der sendes en ikke-tom ny adgangskode
         if (opdateret.getPassword() != null && !opdateret.getPassword().isBlank()) {
-            user.setPassword(opdateret.getPassword());
+            user.setPassword(loginTokenService.getPasswordEncoder().encode(opdateret.getPassword()));
         }
         if (opdateret.getRole() != null) user.setRole(opdateret.getRole());
         if (opdateret.getRestaurant() != null) user.setRestaurant(opdateret.getRestaurant());
