@@ -1,10 +1,11 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
     branches: [ dev, main ]
   pull_request:
     branches: [ dev, main ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,13 +14,21 @@ jobs:
 
     steps:
       - name: Checkout kode
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Sæt Java 21 op
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Byg med Maven
         run: mvn clean install -DskipTests
