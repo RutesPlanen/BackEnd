@@ -18,11 +18,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 /**
  * REST-controller til brugere.
+ * Springs IoC-container står for Inversion of Control
  */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
+    //Dependency Inversion
     private final UserService userService;
 
     public UserController(UserService userService) {

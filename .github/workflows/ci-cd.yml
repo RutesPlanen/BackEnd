@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout kode
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 #Hashpinning
 
       - name: Sæt Java 21 op
         uses: actions/setup-java@v4
@@ -22,12 +22,14 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
+
+        #caching af 3rd-party Maven dependencies
       - name: Cache Maven dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
+          path: ~/.m2/repository #her gemmes Maven dependencies
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}  #cache key
+          restore-keys: | #fallback hvis ingen eksakt match
             ${{ runner.os }}-maven-
 
       - name: Byg med Maven
